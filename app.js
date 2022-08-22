@@ -4,7 +4,7 @@ const app = express();
 const port = process.env.PORT ;
 const database = require("./database.js");
 
-
+app.use(express.json());
 
 const Home = (req, res) => {
   res.send("Welcome to my favourite movie list");
@@ -29,10 +29,31 @@ const getMovies = async (req, res) => {
     res.json(movies);
 }
 
+const postMovie = async (req, res) => {
+  const {title, director,year, color, duration} = req.body;
+  await database.query("INSERT INTO movies (title, director, year, color, duration) VALUES (?, ?, ?, ?, ?)", [title, director, year, color, duration])
+  .then(([results]) => { 
+    res.location(`/movies/${results.insertId}`).status(201);
+  })
+  .catch(err => {
+      res.status(500).send("Error saving movie");
+  });
+ 
+}
 
 const getUsers = async (req, res) => {
     const users = await database.query("SELECT * FROM users");
     res.json(users);
+}
+
+const postUser = async (req, res) => {
+  const {firstname, lastname, email, city, language} = req.body;
+  await database.query("INSERT INTO users (firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)", [firstname, lastname, email, city, language])
+  .then(([results]) => {
+    res.location(`/users/${results.insertId}`).status(201);
+  }).catch(err => {
+      res.status(500).send("Error saving user");
+  });
 }
 
 
@@ -53,6 +74,11 @@ app.get("/movies/:id", MovieById);
 app.get("/movies", getMovies);
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
+
+app.post("/movies", postMovie);
+app.post("/users", postUser);
+
+
 
 app.listen(port, (err) => {
   if (err) {

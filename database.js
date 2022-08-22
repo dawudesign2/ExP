@@ -17,12 +17,5 @@ database
     console.error(err);
 });
 
-database
-.query("SELECT * FROM movies")
-.then(results => {
-    console.log(results);
-}).catch(err => {
-    console.error(err);
-});
 
 module.exports = database;
