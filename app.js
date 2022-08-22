@@ -56,7 +56,6 @@ const postUser = async (req, res) => {
   });
 }
 
-
 const getUserById = async (req, res) => {
     const id = req.params.id;
     const user = await database.query("SELECT * FROM users WHERE id = ?", [id]);
@@ -65,6 +64,21 @@ const getUserById = async (req, res) => {
     } else {
         res.status(404).send("User not found");
     }
+}
+
+const updatedUser = async (req, res) => {
+    const id = req.params.id;
+    const {firstname, lastname, email, city, language} = req.body;
+    await database.query("UPDATE users SET firstname = ?, lastname = ?, email = ?, city = ?, language = ? WHERE id = ?", [firstname, lastname, email, city, language, id])
+    .then(([results]) => {
+        if(results.affectedRows === 0) {
+            res.status(404).send("User not found");
+        } else {
+            res.status(204).send();
+        }
+    }).catch(err => {
+        res.status(500).send("Error updating user");
+    });
 }
 
 
@@ -77,6 +91,9 @@ app.get("/users/:id", getUserById);
 
 app.post("/movies", postMovie);
 app.post("/users", postUser);
+
+
+app.put("/users/:id", updatedUser);
 
 
 
