@@ -81,6 +81,20 @@ const updatedUser = async (req, res) => {
     });
 }
 
+const deleteUser = async (req, res) => {
+    const id = req.params.id;
+    await database.query("DELETE FROM users WHERE id = ?", [id])
+    .then(([results]) => {
+        if(results.affectedRows === 0) {
+            res.status(404).send("User not found");
+        } else {
+            res.status(204).send();
+        }
+    }).catch(err => {
+        res.status(500).send("Error deleting user");
+    });
+}
+
 
 
 app.get("/", Home);
@@ -94,6 +108,8 @@ app.post("/users", postUser);
 
 
 app.put("/users/:id", updatedUser);
+
+app.delete("/users/:id", deleteUser);
 
 
 
