@@ -112,6 +112,8 @@ app.put("/users/:id", updatedUser);
 app.delete("/users/:id", deleteUser);
 
 
+console.log(process.env.NAME, process.env.CITY, process.env.LANGUAGE);
+
 
 app.listen(port, (err) => {
   if (err) {
