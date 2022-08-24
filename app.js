@@ -42,8 +42,36 @@ const postMovie = async (req, res) => {
 }
 
 const getUsers = async (req, res) => {
-    const users = await database.query("SELECT * FROM users");
-    res.json(users);
+    const users = "SELECT * FROM users";
+    const where = [];
+
+    if(req.query.language != null) {
+        where.push({
+            column: "language",
+            operator: "=",
+            value: req.query.language
+        });
+    }
+    if(req.query.city != null) {
+        where.push({
+            column: "city",
+            operator: "=",
+            value: req.query.city
+        });
+    }
+    await database 
+    .query(
+        where.reduce(
+            (query,{column,operator}, index) => 
+            `${query} ${index === 0 ? "WHERE" : "AND"} ${column} ${operator} ?`,users
+        ),
+        where.map(({value}) => value))
+    .then(([results]) => {
+        res.json(results);
+    })
+    .catch(err => {
+        res.status(500).send("Error getting users");
+    });
 }
 
 const postUser = async (req, res) => {
