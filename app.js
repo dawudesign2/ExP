@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT ;
 const database = require("./database.js");
+const validateUser = require("./middleware/validateUser.js");
+const validateMovie = require("./middleware/validateMovie.js");
 
 app.use(express.json());
 
@@ -131,11 +133,11 @@ app.get("/movies", getMovies);
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
 
-app.post("/movies", postMovie);
-app.post("/users", postUser);
+app.post("/movies",validateMovie, postMovie);
+app.post("/users",validateUser ,postUser);
 
 
-app.put("/users/:id", updatedUser);
+app.put("/users/:id", validateUser, updatedUser);
 
 app.delete("/users/:id", deleteUser);
 
