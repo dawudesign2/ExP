@@ -5,12 +5,16 @@ const port = process.env.PORT ;
 const database = require("./database.js");
 const validateUser = require("./middleware/validateUser.js");
 const validateMovie = require("./middleware/validateMovie.js");
+const verifyPassword = require("./auth/verifyPassword.js");
+const verifyToken = require("./auth/verifyToken.js");
 
 app.use(express.json());
 
 const Home = (req, res) => {
   res.send("Welcome to my favourite movie list");
 };
+
+
 
 const MovieById = (req, res) => {
    const id = req.params.id;
@@ -40,7 +44,7 @@ const postMovie = async (req, res) => {
   .catch(err => {
       res.status(500).send("Error saving movie");
   });
- 
+
 }
 
 const getUsers = async (req, res) => {
@@ -96,6 +100,24 @@ const getUserById = async (req, res) => {
     }
 }
 
+
+const getUserByEmail = (req, res, next) => {
+    const { email } = req.body;
+     database
+     .query("SELECT * FROM users WHERE email = ?", [email]).
+     then(([results]) => {
+        if(results[0] != null) {
+            req.user = results[0];
+            next();
+        } else {
+            res.status(404).send("User not found");
+        }
+    }
+    ).catch(err => {
+        res.status(500).send("Error getting user");
+    });
+}
+
 const updatedUser = async (req, res) => {
     const id = req.params.id;
     const {firstname, lastname, email, city, language} = req.body;
@@ -133,13 +155,18 @@ app.get("/movies", getMovies);
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
 
-app.post("/movies",validateMovie, postMovie);
-app.post("/users",validateUser ,postUser);
+
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI3LCJpYXQiOjE2NjMwNjEzNjMsImV4cCI6MTY2MzA2NDk2M30.j2QonO4B6Fssw295GRy7iD74iVZC5d4sphRb8QLXGsQ
+
+app.post("/movies", verifyToken, validateMovie, postMovie);
+app.post("/users", verifyToken,validateUser ,postUser);
 
 
-app.put("/users/:id", validateUser, updatedUser);
+app.put("/users/:id", verifyToken, validateUser, updatedUser);
+app.delete("/users/:id", verifyToken, deleteUser);
 
-app.delete("/users/:id", deleteUser);
+app.post("/login", getUserByEmail, verifyPassword);
+app.post("/register", validateUser, postUser);
 
 
 console.log(process.env.NAME, process.env.CITY, process.env.LANGUAGE);
